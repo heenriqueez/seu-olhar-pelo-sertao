@@ -1,6 +1,6 @@
 
 // ATENÇÃO: Substitua pela URL do seu script publicado no Google Apps Script
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydd04YGMXVHncNYDi2ysc-gUufIvR3ym88qS-l8KaHZAZT3oV_YWpPgaTZbjeXxtWu/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6srFsvizqR0RbbTLYKkB2j-2g_QCNhj8Lnas_XGTNGeZybhPivahwAUPuozRJAG_F/exec';
 
 const users = [
     {
@@ -40,24 +40,26 @@ async function fetchPhotos() {
 
 async function saveEvaluation(evaluation) {
     try {
+        // Para contornar o redirecionamento CORS do Google Apps Script em requisições POST,
+        // usamos o modo 'no-cors'. Isso significa que não receberemos uma resposta direta
+        // do fetch, mas a requisição será enviada e processada pelo script.
         const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain', // Apps Script com POST simples funciona melhor com text/plain
-            },
             body: JSON.stringify({
                 action: 'saveEvaluation',
                 payload: evaluation
             }),
-            mode: 'cors'
+            redirect: 'follow',
+            mode: 'no-cors', // Essencial para evitar o erro de CORS no POST
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8',
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Falha ao salvar avaliação: ${errorText}`);
-        }
-
-        return await response.json();
+        // Com 'no-cors', a resposta é "opaca" e não podemos verificar o status.
+        // Assumimos sucesso se não houver erro de rede.
+        // A confirmação real virá da atualização dos dados na interface.
+        return { status: 'success', message: 'Avaliação enviada para processamento.' };
     } catch (error) {
         console.error('Erro ao salvar avaliação:', error);
         alert('Ocorreu um erro ao salvar sua avaliação. Tente novamente.');
