@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             modal.style.display = 'flex';
             modalImg.src = photo.url;
-            console.log("Linha 487"+ photo);
+          
             const categoryDisplayNames = {
                 'fauna': 'Fauna', 'flora': 'Flora', 'agua': 'Água',
                 'destruicao': 'Destruição do Cerrado', 'pesquisas': 'Pesquisas Científicas',
@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function preloadCategoryImages(category) {
             const photosInCategory = photos[category];
             if (photosInCategory) {
-                console.log(`Pré-carregando ${photosInCategory.length} imagens para a categoria: ${category}`);
+                
                 photosInCategory.forEach(photo => {
                     new Image().src = photo.url;
                 });
