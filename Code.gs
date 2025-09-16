@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// ARQUIVO: Code.gs (Para ser criado no Google Apps Script)
+// ARQUIVO: Code.gs (Versão Refatorada)
 // -----------------------------------------------------------------------------
 
 // 1. ID da pasta principal no Google Drive que contém as subpastas de categorias.
@@ -7,32 +7,24 @@ const ROOT_FOLDER_ID = '1jiT-RhFQLgeZLwVqAIaGIkPmr1heEgDY'; // Substitua se for 
 
 // 2. Crie uma nova Planilha Google para armazenar as avaliações.
 //    Pegue o ID da URL da planilha. Ex: .../spreadsheets/d/ID_DA_PLANILHA/edit
-const SPREADSHEET_ID = 'COLOQUE_O_ID_DA_SUA_PLANILHA_AQUI';
+const SPREADSHEET_ID = '1zQ_oVCntIxANtZhECbNejCqsAFI8htISgTpG5y4uKJo'; // <<< ATENÇÃO: SUBSTITUA ESTE VALOR
 const SHEET_NAME = 'Avaliacoes'; // Nome da aba onde os dados serão salvos
 
 // Função principal que trata as requisições GET
 function doGet(e) {
-  const action = e.parameter.action;
-
-  if (action === 'getPhotos') {
-    try {
+  try {
+    const action = e.parameter.action;
+    if (action === 'getPhotos') {
       const photos = getPhotosFromDrive();
       const evaluations = getEvaluationsFromSheet();
       const photosWithRatings = mergeEvaluations(photos, evaluations);
-
-      return ContentService
-        .createTextOutput(JSON.stringify(photosWithRatings))
-        .setMimeType(ContentService.MimeType.JSON);
-    } catch (error) {
-      return ContentService
-        .createTextOutput(JSON.stringify({ status: 'error', message: error.message }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createJsonResponse(photosWithRatings);
     }
+    return createJsonResponse({ status: 'error', message: 'Ação GET inválida.' }, 400);
+  } catch (error) {
+    Logger.log(`Erro em doGet: ${error.message}\n${error.stack}`);
+    return createJsonResponse({ status: 'error', message: 'Erro no servidor ao buscar dados: ' + error.message }, 500);
   }
-
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: 'error', message: 'Ação inválida.' }))
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // Função principal que trata as requisições POST
@@ -44,22 +36,34 @@ function doPost(e) {
     if (action === 'saveEvaluation') {
       const payload = requestData.payload;
       saveEvaluationToSheet(payload);
-      return ContentService
-        .createTextOutput(JSON.stringify({ status: 'success', message: 'Avaliação salva com sucesso.' }))
-        .setMimeType(ContentService.MimeType.JSON);
+      return createJsonResponse({ status: 'success', message: 'Avaliação salva com sucesso.' });
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: 'Ação POST inválida.' }))
-      .setMimeType(ContentService.MimeType.JSON);
-
+    return createJsonResponse({ status: 'error', message: 'Ação POST inválida.' }, 400);
   } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'error', message: 'Erro no POST: ' + error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    Logger.log(`Erro em doPost: ${error.message}\n${error.stack}`);
+    return createJsonResponse({ status: 'error', message: 'Erro no servidor ao processar a requisição: ' + error.toString() }, 500);
   }
 }
 
+// --- Função Auxiliar de Resposta ---
+
+/**
+ * Cria uma resposta JSON padrão com cabeçalhos CORS.
+ * @param {object} data - O objeto a ser convertido para JSON.
+ * @param {number} [statusCode=200] - O código de status HTTP (não usado diretamente, mas bom para referência).
+ * @returns {GoogleAppsScript.Content.TextOutput}
+ */
+function createJsonResponse(data, statusCode = 200) {
+  // Cria a resposta de texto com o tipo MIME correto.
+  const response = ContentService.createTextOutput(JSON.stringify(data))
+                                 .setMimeType(ContentService.MimeType.JSON);
+
+  // Define os cabeçalhos CORS para permitir requisições de qualquer origem
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  return response;
+}
 
 // --- Funções Auxiliares ---
 
@@ -91,39 +95,56 @@ function getPhotosFromDrive() {
 }
 
 function getEvaluationsFromSheet() {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-  if (!sheet) return [];
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) return [];
 
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return []; // Se só tiver o cabeçalho
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return []; // Se só tiver o cabeçalho ou estiver vazia
 
-  const headers = data[0];
-  const evaluations = [];
+    const headers = data[0].map(h => h.toString().trim());
+    const evaluations = [];
 
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const evaluation = {
-      photoId: row[headers.indexOf('photoId')],
-      evaluator: row[headers.indexOf('evaluator')],
-      comments: row[headers.indexOf('comments')],
-      scores: {}
-    };
-    // Assumindo que os scores começam após as 3 primeiras colunas
-    for (let j = 3; j < headers.length; j++) {
-      evaluation.scores[headers[j]] = row[j];
+    const photoIdIndex = headers.indexOf('photoId');
+    const evaluatorIndex = headers.indexOf('evaluator');
+    const commentsIndex = headers.indexOf('comments');
+
+    if (photoIdIndex === -1 || evaluatorIndex === -1) {
+      throw new Error("A planilha de avaliações não contém as colunas obrigatórias 'photoId' e 'evaluator'.");
     }
-    evaluations.push(evaluation);
+
+    // Itera pelas linhas de dados (começando da segunda linha)
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const evaluation = {
+        photoId: row[photoIdIndex],
+        evaluator: row[evaluatorIndex],
+        comments: commentsIndex > -1 ? row[commentsIndex] : '',
+        scores: {}
+      };
+
+      // Itera sobre os cabeçalhos para preencher os scores dinamicamente
+      headers.forEach((header, j) => {
+        if (j !== photoIdIndex && j !== evaluatorIndex && j !== commentsIndex) {
+          evaluation.scores[header] = row[j];
+        }
+      });
+      evaluations.push(evaluation);
+    }
+    return evaluations;
+  } catch (e) {
+    Logger.log(`Erro ao ler a planilha: ${e.message}`);
+    throw new Error("Não foi possível ler os dados da planilha de avaliações.");
   }
-  return evaluations;
 }
 
 function mergeEvaluations(photos, evaluations) {
   evaluations.forEach(evaluation => {
     for (const category in photos) {
-      const photo = photos[category].find(p => p.id === evaluation.photoId);
+      // Compara IDs como strings para evitar problemas de tipo (número vs texto)
+      const photo = photos[category].find(p => p.id.toString() === evaluation.photoId.toString());
       if (photo) {
-        // Remove o photoId do objeto de avaliação antes de adicioná-lo
-        const { photoId, ...ratingData } = evaluation;
+        const { photoId, ...ratingData } = evaluation; // Remove o photoId antes de adicionar
         photo.ratings.push(ratingData);
         break;
       }
@@ -134,20 +155,36 @@ function mergeEvaluations(photos, evaluations) {
 
 
 function saveEvaluationToSheet(evaluation) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000); // Espera até 30 segundos para obter o lock
 
-  // Cria o cabeçalho se a planilha estiver vazia
-  if (sheet.getLastRow() === 0) {
-    const headers = ['photoId', 'evaluator', 'comments', ...Object.keys(evaluation.scores)];
-    sheet.appendRow(headers);
+  let sheet; // Declara a variável sheet fora do try
+  try {
+    sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      // Se a aba não existe, cria uma nova
+      sheet = SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet(SHEET_NAME);
+      Logger.log(`Aba '${SHEET_NAME}' não encontrada. Criando uma nova.`);
+    }
+
+    // Cria o cabeçalho apenas se a planilha estiver completamente vazia
+    if (sheet.getLastRow() === 0) {
+      const headers = ['photoId', 'evaluator', 'comments', ...Object.keys(evaluation.scores)];
+      sheet.appendRow(headers);
+      Logger.log('Cabeçalho da planilha de avaliações criado.');
+    }
+
+    const rowData = [
+      evaluation.photoId,
+      evaluation.evaluator,
+      evaluation.comments,
+      ...Object.values(evaluation.scores)
+    ];
+
+    sheet.appendRow(rowData);
+    Logger.log(`Avaliação salva para a foto ID: ${evaluation.photoId} pelo avaliador: ${evaluation.evaluator}`);
+
+  } finally {
+    lock.releaseLock();
   }
-
-  const rowData = [
-    evaluation.photoId,
-    evaluation.evaluator,
-    evaluation.comments,
-    ...Object.values(evaluation.scores)
-  ];
-
-  sheet.appendRow(rowData);
 }
