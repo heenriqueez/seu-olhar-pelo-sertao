@@ -12,7 +12,7 @@ const SHEET_NAME = 'Avaliacoes'; // Nome da aba onde os dados serão salvos
 
 // Função principal que trata as requisições GET
 function doGet(e) {
-  try {
+  try {    
     const action = e.parameter.action;
     if (action === 'getPhotos') {
       const photos = getPhotosFromDrive();
@@ -30,7 +30,12 @@ function doGet(e) {
 // Função principal que trata as requisições POST
 function doPost(e) {
   try {
-    const requestData = JSON.parse(e.postData.contents);
+    // Apps Script com POST simples (Content-Type: text/plain) recebe os dados diretamente em e.postData.contents
+    // Não é necessário um e.parameter.postData como na simulação GET.
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error("Requisição POST inválida ou sem conteúdo.");
+    }
+    const requestData = JSON.parse(e.postData.contents);    
     const action = requestData.action;
 
     if (action === 'saveEvaluation') {
@@ -41,7 +46,7 @@ function doPost(e) {
 
     return createJsonResponse({ status: 'error', message: 'Ação POST inválida.' }, 400);
   } catch (error) {
-    Logger.log(`Erro em doPost: ${error.message}\n${error.stack}`);
+    Logger.log(`Erro em doPost: ${error.message}\n${error.stack}\nConteúdo recebido: ${e.postData ? e.postData.contents : 'N/A'}`);
     return createJsonResponse({ status: 'error', message: 'Erro no servidor ao processar a requisição: ' + error.toString() }, 500);
   }
 }
@@ -55,13 +60,16 @@ function doPost(e) {
  * @returns {GoogleAppsScript.Content.TextOutput}
  */
 function createJsonResponse(data, statusCode = 200) {
-  // Cria a resposta de texto com o tipo MIME correto.
-  const response = ContentService.createTextOutput(JSON.stringify(data))
-                                 .setMimeType(ContentService.MimeType.JSON);
+  // Cria a resposta de texto e define o tipo MIME.
+  const response = ContentService.createTextOutput(JSON.stringify(data));
+  response.setMimeType(ContentService.MimeType.JSON);
 
   // Define os cabeçalhos CORS para permitir requisições de qualquer origem
   response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  // Adiciona o cabeçalho 'Access-Control-Allow-Headers' para requisições com 'Content-Type'
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); 
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   return response;
 }
 
