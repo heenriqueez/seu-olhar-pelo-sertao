@@ -94,23 +94,23 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleLoginPage() {
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
-            loginForm.addEventListener('submit', function (e) {
+            loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const username = e.target.username.value;
                 const password = e.target.password.value;
 
-                const user = users.find(u => u.username === username && u.password === password);
+                const result = await loginUser(username, password);
 
-                if (user) {
-                    localStorage.setItem('loggedInUser', JSON.stringify(user));
-                    if (user.role === 'admin') {
+                if (result.status === 'success' && result.user) {
+                    localStorage.setItem('loggedInUser', JSON.stringify(result.user));
+                    if (result.user.role === 'admin') {
                         window.location.href = 'admin.html';
                     } else {
                         window.location.href = 'avaliacao.html';
                     }
                 } else {
-                  
-                    showCustomAlert('Usuário ou senha inválidos!');
+                    const errorMessage = result.message || 'Usuário ou senha inválidos!';
+                    showCustomAlert(errorMessage);
                 }
             });
         }
