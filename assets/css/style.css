@@ -1,0 +1,793 @@
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #1240AB;
+    --primary-hover-color: #0d2d7c;
+    --secondary-color: #6c757d;
+    --background-gradient-start: #e9ecef;
+    --background-gradient-end: #f8f9fa;
+    --text-color: #333;
+    --container-bg: #ffffff;
+    --border-color: #dee2e6;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Red Hat Display', sans-serif;
+    background: linear-gradient(to bottom right, var(--background-gradient-start), var(--background-gradient-end));
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container, .login-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--container-bg);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+header .logo {
+    max-width: 100px;
+    margin-bottom: 1rem;
+}
+
+header h1 {
+    flex-grow: 1;
+    color: var(--primary-color);
+}
+
+header nav a, #logout-button {
+    text-decoration: none;
+    color: var(--secondary-color);
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: 1px solid var(--secondary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+header nav a:hover, #logout-button:hover {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.login-container {
+    max-width: 450px;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+    border-color: var(--primary-color);    
+    box-shadow: 0 0 0 3px rgba(18, 64, 171, 0.25);
+    outline: none;
+}
+
+button {
+    display: inline-block;
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.photo-evaluation-area {
+    display: flex;
+    gap: 2rem;
+}
+
+.photo-display {
+    flex: 1;
+    text-align: center;
+}
+
+#photo-to-evaluate {
+    max-width: 100%;
+    border: 3px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    min-height: 300px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+#photo-to-evaluate:hover {
+    transform: scale(1.02);
+}
+
+#photo-info {
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.category-title {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-transform: capitalize;
+    font-size: 1.5rem;
+}
+
+#evaluation-form {
+    flex: 1;
+}
+
+#evaluation-form h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.criterion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.criterion label {
+    flex-basis: 60%;
+}
+
+.criterion input[type="range"] {
+    flex-basis: 30%;
+}
+
+.criterion span {
+    font-weight: bold;
+    color: var(--primary-color);
+    min-width: 20px;
+    text-align: right;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    margin-left: 8px;
+    cursor: pointer;
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1rem; 
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 220px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; 
+    left: 50%;
+    margin-left: -110px; 
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+#photo-management h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+#add-photo-form {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+
+.file-upload-group {
+    position: relative;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.file-upload-group:hover {
+    border-color: var(--primary-color);
+}
+
+.file-upload-group .file-input {
+    display: none; 
+}
+
+.file-upload-group label {
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.file-upload-group label:hover {
+    background-color: var(--primary-hover-color);
+}
+
+
+.file-upload-group.file-selected {
+    border-color: var(--success-color);
+}
+
+
+.file-upload-group.file-selected label {
+    background-color: var(--success-color);
+}
+
+
+.admin-layout {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-form-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.admin-list-section {
+    flex: 2;
+    min-width: 400px;
+}
+
+.admin-list-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+
+#photo-list-container {
+    overflow: hidden;
+    position: relative;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 1rem 0;
+    height: 150px; 
+    display: flex;
+    align-items: center;
+}
+
+.carousel-track {
+    display: flex;
+    animation: scroll 40s linear infinite;
+}
+
+.carousel-item {
+    position: relative;
+    margin: 0 1rem;
+    flex-shrink: 0; /* Impede que os itens encolham */
+}
+
+.carousel-item img {
+    height: 120px; /* Altura da imagem dentro do carrossel */
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: block;
+}
+
+.carousel-item img:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+.carousel-item-category {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    text-transform: capitalize;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } /* Anima até a metade para criar o loop */
+}
+
+.photo-item {
+    position: relative;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 1rem;
+    background-color: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+}
+
+.photo-item-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center; /* Alinha verticalmente ao centro */
+    justify-content: space-between; /* Distribui o espaço */
+    width: 100%;
+}
+
+.photo-item-header img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.photo-item-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.photo-item-info p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.photo-item-category {
+    flex-basis: 150px; /* Largura base para a categoria */
+    text-align: center;
+    font-weight: bold;
+    color: var(--secondary-color);
+    text-transform: capitalize;
+}
+
+.photo-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out;
+    margin-top: 0;
+}
+
+.photo-details.open {
+    max-height: 500px; /* Altura suficiente para o conteúdo */
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.photo-item img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+.photo-item button {
+    width: auto;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem; /* Reduz um pouco para caber melhor */
+    margin: 0;
+    white-space: nowrap; /* Impede que o texto do botão quebre */
+}
+
+.photo-item .remove-btn {
+    background-color: var(--danger-color);
+}
+
+.photo-item .details-btn {
+    background-color: var(--secondary-color);
+}
+
+.admin-ranking-section {
+    flex: 1;
+    min-width: 300px;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.admin-ranking-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+#ranking-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+#ranking-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#ranking-list li:last-child {
+    border-bottom: none;
+}
+
+#ranking-list .rank-position {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+    width: 30px;
+    text-align: center;
+}
+
+#ranking-list li:nth-child(1) .rank-position { color: #ffd700; } /* Ouro */
+#ranking-list li:nth-child(2) .rank-position { color: #c0c0c0; } /* Prata */
+#ranking-list li:nth-child(3) .rank-position { color: #cd7f32; } /* Bronze */
+
+#ranking-list img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .photo-evaluation-area {
+        flex-direction: column;
+    }
+    .container, .login-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .admin-layout {
+        flex-direction: column;
+    }
+}
+
+/* --- Estilos do Modal de Alerta Personalizado --- */
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.custom-alert-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-alert-box {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.custom-alert-overlay.visible .custom-alert-box {
+    transform: scale(1);
+}
+
+.custom-alert-box p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.custom-alert-box .confirm-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.custom-alert-box .confirm-buttons button {
+    width: auto;
+}
+
+#evaluation-form.evaluated .criterion input[type="range"] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+#evaluation-form.evaluated .criterion input[type="range"]::-webkit-slider-thumb {
+    background: var(--secondary-color);
+}
+
+#evaluation-form.evaluated .navigation-buttons button:disabled {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    cursor: not-allowed;
+}
+
+.evaluated-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.evaluation-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.details-table th, .details-table td {
+    text-align: left;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.details-table th {
+    color: var(--primary-color);
+}
+
+.details-table td:last-child {
+    text-align: right;
+    font-weight: bold;
+}
+
+.evaluator-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.evaluator-nav-btn {
+    background: none;
+    border: 2px solid #1240AB;
+    position: relative;
+    bottom: 1cm;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.evaluator-nav-btn:hover {
+    background-color: #1240AB;
+    color: white;
+}
+
+
+.evaluator-nav-btn:disabled:hover{
+    color: var(--border-color);
+    border: 2px solid var(--border-color);
+    cursor: not-allowed;
+}
+
+.evaluator-nav-btn:disabled {
+    background-color: #ffffff00;
+    color: var(--border-color);
+    border: 2px solid var(--border-color);
+    cursor: not-allowed;
+}
+
+.details-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 10cm;
+    overflow: hidden;
+}
+
+.details-carousel-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.details-carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    padding: 0 0.5rem;
+}
+
+.details-carousel-slide .average-scores,
+.details-carousel-slide h4,
+.details-carousel-slide .details-table {
+    margin: 0 auto; /* Centraliza o conteúdo do slide */
+}
+
+.details-carousel-navigation {
+    position: absolute;
+    top: 50%;
+    left: 4rem; /* Move para fora da área do slide */
+    right: 4rem; /* Move para fora da área do slide */
+    transform: translateY(2cm);
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.photo-details.open .details-carousel-navigation {
+    visibility: visible;
+    opacity: 1;
+}
+
+.details-carousel-navigation .evaluator-nav-btn {
+    pointer-events: auto; /* Garante que os botões sejam clicáveis */
+}
+
+/* Estilos para o Modal de Imagem do Admin */
+.image-modal-container {
+    position: relative;
+    text-align: center;
+}
+
+.image-modal-caption {
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Centraliza horizontalmente */
+    transform: translateX(-50%); /* Ajuste fino para centralização */
+    width: 100%; /* Ocupa a largura da imagem */
+    max-width: 90%; /* Garante que não ultrapasse a imagem */
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+    padding: 40px 20px 20px 20px;
+    text-align: center;
+    color: white;
+    white-space: pre-line; /* Respeita as quebras de linha (\n) */
+    text-shadow: 1px 1px 2px black;
+}
+.image-modal-caption span {
+    display: block;
+}
+
+.image-modal-caption span:first-child { /* Nome do Participante */
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.image-modal-overlay {
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90vh;
+    animation: zoom 0.6s;
+}
+
+@keyframes zoom {
+    from {transform:scale(0)}
+    to {transform:scale(1)}
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.image-modal-close:hover,
+.image-modal-close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
