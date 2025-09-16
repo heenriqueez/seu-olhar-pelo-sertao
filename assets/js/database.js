@@ -2,25 +2,30 @@
 // ATENÇÃO: Substitua pela URL do seu script publicado no Google Apps Script
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxA1NjkAe8U9QhQkDO0I_BPTvl8jzQTsUikvkqYbr9nJUaSniUd0xJqRgQBY8JgCtDm/exec';
 
-const users = [
-    {
-        username: 'admin',
-        password: 'adminpassword',
-        role: 'admin'
-    },
-    {
-        username: 'Carlos Henrique',
-        password: 'avaliadorpassword1',
-        role: 'evaluator'
-    },
-    {
-        username: 'avaliador2',
-        password: 'avaliadorpassword2',
-        role: 'evaluator'
-    }
-];
-
 let photos = {};
+
+async function loginUser(username, password) {
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'login',
+                payload: { username, password }
+            }),
+            mode: 'cors'
+        });
+
+        if (!response.ok) {
+            throw new Error('Falha na comunicação com o servidor de autenticação.');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Erro durante o login:', error);
+        return { status: 'error', message: error.message };
+    }
+}
 
 async function fetchPhotos() {
     try {
