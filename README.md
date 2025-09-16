@@ -19,13 +19,3 @@
  -   **Backend (Serverless):** Google Apps Script
  -   **Banco de Dados/Armazenamento:** Google Drive (para as imagens) e Google Sheets (para armazenar as avaliações).
  
- ## 🛠️ Configuração e Uso
- 
- 1.  **Backend (Google Apps Script):**
-     -   É necessário ter um script no Google Apps Script que gerencia a busca de fotos no Google Drive e o salvamento das avaliações em uma Planilha Google.
-     -   Após publicar o script como um aplicativo web, a URL gerada deve ser inserida na constante `GOOGLE_SCRIPT_URL` no arquivo `assets/js/database.js`.
- 
- 2.  **Front-end:**
-     -   Basta hospedar os arquivos (HTML, CSS, JS) em qualquer servidor web. A aplicação pode ser acessada diretamente pelo navegador.
-     -   Os usuários e senhas são gerenciados (atualmente de forma insegura) no arquivo `assets/js/database.js`.
- 
