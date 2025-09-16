@@ -34,15 +34,24 @@ async function fetchPhotos() {
             throw new Error('Falha ao buscar fotos. Verifique a URL do Google Apps Script e as permissões.');
         }
         const photosData = await response.json();
-        
-        // Constrói a URL da imagem no frontend para cada foto recebida
-        for (const category in photosData) {
-            photosData[category].forEach(photo => {
-                // Este é o formato de URL que exibe a imagem diretamente
-                photo.url = `https://lh3.googleusercontent.com/d/${photo.id}`;
+
+        // Limpa o objeto de fotos antigo
+        photos = {}; 
+
+        // Processa os dados recebidos e padroniza as categorias para minúsculas
+        for (const categoryName in photosData) {
+            const normalizedCategory = categoryName.toLowerCase(); // Ex: "Agua" -> "agua"
+            if (!photos[normalizedCategory]) {
+                photos[normalizedCategory] = [];
+            }
+            
+            photosData[categoryName].forEach(photo => {
+                // Constrói a URL da imagem e adiciona ao objeto 'photos' com a chave normalizada
+                const processedPhoto = { ...photo, url: `https://lh3.googleusercontent.com/d/${photo.id}` };
+                photos[normalizedCategory].push(processedPhoto);
             });
         }
-        photos = photosData; // Agora 'photos' contém as URLs corretas
+
     } catch (error) {
         console.error('Erro ao buscar fotos:', error);
         // Em caso de falha, exibe um alerta para o usuário.
