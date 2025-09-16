@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação - Concurso de Fotografia UFJ</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="./assets/cropped-LOGO_ICON.png" alt="Logo UFJ" class="logo">
+            <h1>Avaliação das Fotos</h1>
+            <nav>
+                <button id="logout-button">Sair</button>
+            </nav>
+        </header>
+
+        <main>
+            <div class="selection-area">
+                <label for="category-select">Selecione uma Categoria:</label>
+                <select id="category-select">
+                    <option value="fauna">Fauna</option>
+                    <option value="flora">Flora</option>
+                    <option value="agua">Água</option>
+                    <option value="destruicao">Destruição do Cerrado</option>
+                    <option value="pesquisas">Pesquisas Científicas</option>
+                    <option value="religiosidade">Religiosidade</option>
+                    <option value="povos">Povos Tradicionais</option>
+                </select>
+            </div>
+            <div style="height: 1cm;"></div>
+            <div class="photo-evaluation-area">
+                <div class="photo-display">
+                    <h2 id="current-category-title" class="category-title"></h2>
+                    <img id="photo-to-evaluate" src="https://placehold.co/400x300/grey/white?text=Carregando..." alt="Foto para avaliação">
+                    <p id="photo-info"></p>
+                </div>
+
+                <form id="evaluation-form">
+                    <div id="already-evaluated-message" class="evaluated-message" style="display: none;">
+                    </div>
+
+                    <h3>Critérios de Avaliação (Nota 1-10)</h3>
+
+                    <div class="criterion">
+                        <label for="enquadramento">Enquadramento e alinhamento
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia o posicionamento dos elementos na cena, a regra dos terços e o alinhamento do horizonte.</span></span>
+                        </label>
+                        <input type="range" id="enquadramento" min="1" max="10" value="5">
+                        <span id="enquadramento-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="criatividade">Criatividade
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia a originalidade, o ponto de vista único e a abordagem inovadora do tema.</span></span>
+                        </label>
+                        <input type="range" id="criatividade" min="1" max="10" value="5">
+                        <span id="criatividade-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="contexto">Contexto da foto
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia se a imagem conta uma história ou transmite uma mensagem clara relacionada à categoria.</span></span>
+                        </label>
+                        <input type="range" id="contexto" min="1" max="10" value="5">
+                        <span id="contexto-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="composicao-foto">Composição fotografada
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia a organização dos elementos visuais, como linhas, formas e texturas, para criar uma imagem harmoniosa.</span></span>
+                        </label>
+                        <input type="range" id="composicao-foto" min="1" max="10" value="5">
+                        <span id="composicao-foto-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="composicao-cores">Composição de cores
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia o uso da cor, contraste, saturação e harmonia cromática para impactar o observador.</span></span>
+                        </label>
+                        <input type="range" id="composicao-cores" min="1" max="10" value="5">
+                        <span id="composicao-cores-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="identificacao">Identificação do Sertão Goiano
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia a clareza com que a foto representa elementos característicos do bioma e da cultura local.</span></span>
+                        </label>
+                        <input type="range" id="identificacao" min="1" max="10" value="5">
+                        <span id="identificacao-value">5</span>
+                    </div>
+                    <div class="criterion">
+                        <label for="resolucao">Resolução da foto
+                            <span class="tooltip">ⓘ<span class="tooltip-text">Avalia a nitidez, o foco e a qualidade técnica geral da imagem, livre de ruídos ou distorções excessivas.</span></span>
+                        </label>
+                        <input type="range" id="resolucao" min="1" max="10" value="5">
+                        <span id="resolucao-value">5</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comments">Comentários Adicionais:</label>
+                        <textarea id="comments" rows="4"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" id="prev-photo" class="btn-secondary">Foto Anterior</button>
+                        <button type="submit" id="submit-evaluation" class="btn">Enviar Avaliação</button>
+                        <button type="button" id="next-photo" class="btn-secondary">Próxima Foto</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div id="custom-alert" class="custom-alert-overlay" style="display: none;">
+        <div class="custom-alert-box">
+            <p id="custom-alert-message"></p>
+            <button id="custom-alert-close">OK</button>
+        </div>
+    </div>
+
+    <div id="custom-confirm" class="custom-alert-overlay" style="display: none;">
+        <div class="custom-alert-box">
+            <p id="custom-confirm-message"></p>
+            <div class="confirm-buttons">
+                <button id="custom-confirm-cancel" class="btn-secondary">Cancelar</button>
+                <button id="custom-confirm-ok" class="btn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-modal" class="image-modal-overlay" style="display: none;">
+        <span class="image-modal-close">&times;</span>
+        <img class="image-modal-content" id="modal-image-content">
+    </div>
+
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>

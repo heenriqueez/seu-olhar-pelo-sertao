@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador - Seu Olhar Pelo Sertão</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+        <img src="./assets/cropped-LOGO_ICON.png" alt="Logo UFJ" class="logo">
+        <h1>Painel do Administrador</h1>
+        <nav>
+            <button id="logout-button">Sair</button>
+        </nav>
+    </header>
+    <main>
+            <div class="admin-layout">
+                <section id="photo-management" class="admin-form-section">
+                    <h2>Gerenciamento de Fotos</h2>
+                    <form id="add-photo-form">
+                        <div class="input-group file-upload-group">
+                            <label for="photo-file">Selecione a Foto</label>
+                            <input type="file" id="photo-file" name="photo-file" accept="image/*" required class="file-input">
+                        </div>
+                        <div class="input-group">
+                            <label for="participant-name">Nome do Participante</label>
+                            <input type="text" id="participant-name" name="participant-name" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="category-select">Categoria</label>
+                            <select id="category-select" name="category-select" required>
+                                <option value="fauna">Fauna</option>
+                                <option value="flora">Flora</option>
+                                <option value="agua">Água</option>
+                                <option value="destruicao">Destruição do Cerrado</option>
+                                <option value="pesquisas">Pesquisas Científicas</option>
+                                <option value="religiosidade">Religiosidade</option>
+                                <option value="povos">Povos Tradicionais</option>
+                            </select>
+                        </div>
+                        <button type="submit">Adicionar Foto</button>
+                    </form>
+                </section>
+                <section class="admin-list-section">
+                    <h2>Fotos Adicionadas</h2>
+                    <div id="photo-list-container">
+                    </div>
+                </section>
+                <section class="admin-ranking-section">
+                    <h2>Ranking de Fotos</h2>
+                    <div class="input-group">
+                        <label for="ranking-category-select">Filtrar por Categoria:</label>
+                        <select id="ranking-category-select">
+                            <option value="all">Todas as Categorias</option>
+                        </select>
+                        <button type="button" id="export-csv-btn" class="btn" style="width: auto; margin-top: 1rem;">Exportar para CSV</button>
+                    </div>
+                    <ol id="ranking-list"></ol>
+                </section>
+            </div>
+    </main>
+    </div>
+
+    <div id="custom-alert" class="custom-alert-overlay" style="display: none;">
+        <div class="custom-alert-box">
+            <p id="custom-alert-message"></p>
+            <button id="custom-alert-close">OK</button>
+        </div>
+    </div>
+
+    <div id="image-modal-admin" class="image-modal-overlay" style="display: none;">
+        <span class="image-modal-close">&times;</span>
+        <div class="image-modal-container">
+            <img class="image-modal-content" id="modal-image-content-admin">
+            <div id="modal-image-caption-admin" class="image-modal-caption">Teste Caption</div>
+        </div>
+    </div>
+
+    <script src="assets/js/database.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
