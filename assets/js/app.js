@@ -241,8 +241,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 const tieBreakerCriteria = ['composicao foto', 'criatividade', 'enquadramento', 'contexto', 'composicao cores', 'identificacao', 'resolucao'];
                 for (const crit of tieBreakerCriteria) {
-                    const scoreA = a.numEvaluations > 0 ? (a.criteriaScores[crit] / a.numEvaluations) : 0;
-                    const scoreB = b.numEvaluations > 0 ? (b.criteriaScores[crit] / b.numEvaluations) : 0;
+                    // Garante que se um critério não existir, seu valor seja 0 para evitar NaN.
+                    const totalScoreA = a.criteriaScores[crit] || 0;
+                    const totalScoreB = b.criteriaScores[crit] || 0;
+                    const scoreA = a.numEvaluations > 0 ? (totalScoreA / a.numEvaluations) : 0;
+                    const scoreB = b.numEvaluations > 0 ? (totalScoreB / b.numEvaluations) : 0;
                     if (scoreB !== scoreA) return scoreB - scoreA;
                 }
 
