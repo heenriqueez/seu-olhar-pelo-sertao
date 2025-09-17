@@ -217,20 +217,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 photo.ratings.forEach(ev => {
                     let evaluationScoreSum = 0;
                     let criteriaCount = 0;
-                    // Normaliza as chaves dos scores recebidos para minúsculas e sem espaços
-                    const normalizedScores = Object.fromEntries(Object.entries(ev.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
-
-                    for (const crit in normalizedScores) {
+                    
+                    for (const crit in ev.scores) { 
+                        // Agora os scores já vêm normalizados do backend
                         if (criteriaScores.hasOwnProperty(crit)) {
-                            const score = parseInt(normalizedScores[crit], 10);
+                            const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
                             criteriaScores[crit] += score;
                             criteriaCount++;
                         }
                     }
                     totalAverageSum += (criteriaCount > 0 ? (evaluationScoreSum / criteriaCount) : 0);
+                    
                 });
                 const overallAverage = numEvaluations > 0 ? (totalAverageSum / numEvaluations) : 0;
+                
                 return { ...photo, average: overallAverage, numEvaluations: numEvaluations, criteriaScores: criteriaScores };
             });
 
@@ -238,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (b.average !== a.average) {
                     return b.average - a.average;
                 }
-                const tieBreakerCriteria = ['composicao-foto', 'criatividade', 'enquadramento', 'contexto', 'composicao-cores', 'identificacao', 'resolucao'];
+                const tieBreakerCriteria = ['composicao foto', 'criatividade', 'enquadramento', 'contexto', 'composicao cores', 'identificacao', 'resolucao'];
                 for (const crit of tieBreakerCriteria) {
                     const scoreA = a.numEvaluations > 0 ? (a.criteriaScores[crit] / a.numEvaluations) : 0;
                     const scoreB = b.numEvaluations > 0 ? (b.criteriaScores[crit] / b.numEvaluations) : 0;
@@ -298,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const photoId = this.dataset.photoid.replace('rank-', '');
                         const photo = rankedPhotos.find(p => p.id === photoId);
                         
-                        renderEvaluationDetails(detailsPanel, photo);
+                        renderEvaluationDetails(detailsPanel, photo, criteriaKeys);
                         detailsPanel.dataset.detailsLoaded = 'true';
                     }
                 });
@@ -309,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showCustomAlert('Gerando CSV...');
             
             const selectedCategory = rankingCategorySelect.value;
-            const criteriaKeys = ['enquadramento', 'criatividade', 'contexto', 'composicao-foto', 'composicao-cores', 'identificacao', 'resolucao'];
+            const criteriaKeys = ['enquadramento', 'criatividade', 'contexto', 'composicao foto', 'composicao cores', 'identificacao', 'resolucao'];
             
             let allPhotos = [];
             for (const category in photos) {
@@ -328,11 +329,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 photo.ratings.forEach(ev => {
                     let evaluationScoreSum = 0;
                     let criteriaCount = 0;
-                    const normalizedScores = Object.fromEntries(Object.entries(ev.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
 
-                    for (const crit in normalizedScores) {
+                    for (const crit in ev.scores) { // Agora os scores já vêm normalizados do backend
                         if (criteriaScores.hasOwnProperty(crit)) {
-                            const score = parseInt(normalizedScores[crit], 10);
+                            const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
                             criteriaScores[crit] += score;
                             criteriaCount++;
@@ -375,23 +375,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function formatCriterionName(name) {
             // Substitui hífens por espaços e capitaliza a primeira letra de cada palavra de forma segura.
-            // Isso evita a capitalização incorreta após caracteres acentuados.
-            return name.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, char => char.toUpperCase());
+            // Agora lida com espaços diretamente e capitaliza.
+            return name.replace(/(^\w|\s\w)/g, char => char.toUpperCase());
         }
 
-        function renderEvaluationDetails(detailsPanel, photo) {
+        function renderEvaluationDetails(detailsPanel, photo, criteriaKeys) {
             let carouselHtml = `
                 <div class="details-carousel-wrapper">
                     <div class="details-carousel-track">
             `;
+
+            // Slide 1: Médias Gerais
             carouselHtml += '<div class="details-carousel-slide">';
             carouselHtml += '<h4>Médias Gerais</h4>';
             if (photo.numEvaluations > 0) {
                 carouselHtml += '<table class="details-table"><tbody>';
-                for (const crit in photo.criteriaScores) {
-                    const averageScore = (photo.criteriaScores[crit] / photo.numEvaluations).toFixed(2);
+                criteriaKeys.forEach(crit => {
+                    const totalScoreForCrit = photo.criteriaScores[crit] || 0;
+                    const averageScore = (totalScoreForCrit / photo.numEvaluations).toFixed(2);
                     carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${averageScore}</td></tr>`;
-                }
+                });
                 carouselHtml += '</tbody></table>';
             } else {
                 carouselHtml += '<p>Nenhuma avaliação ainda.</p>';
@@ -399,13 +402,13 @@ document.addEventListener('DOMContentLoaded', function () {
             carouselHtml += '</div>';
             
             if (photo.numEvaluations > 0) {
+                // Slides seguintes: Avaliações Individuais
                 photo.ratings.forEach((evaluation, index) => {
                     carouselHtml += '<div class="details-carousel-slide">';
                     carouselHtml += `<h4>Avaliação de: ${evaluation.evaluator}</h4>`;
-                    const normalizedScores = Object.fromEntries(Object.entries(evaluation.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
                     carouselHtml += '<table class="details-table"><tbody>';
-                    for (const crit in normalizedScores) {
-                        carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${normalizedScores[crit]}</td></tr>`;
+                    for (const crit in evaluation.scores) { // Agora os scores já vêm normalizados
+                        carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${evaluation.scores[crit]}</td></tr>`;
                     }
                     carouselHtml += '</tbody></table>';
                     carouselHtml += `<p><strong>Comentários:</strong> ${evaluation.comments || 'Nenhum'}</p>`;
