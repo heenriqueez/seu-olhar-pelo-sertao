@@ -47,7 +47,10 @@ async function fetchPhotos() {
             
             photosData[categoryName].forEach(photo => {
                 // Constrói a URL da imagem e adiciona ao objeto 'photos' com a chave normalizada
-                const processedPhoto = { ...photo, url: `https://lh3.googleusercontent.com/d/${photo.id}` };
+                const processedPhoto = { 
+                    ...photo, // Mantém id, participant, e o mais importante: ratings
+                    url: `https://lh3.googleusercontent.com/d/${photo.id}` 
+                };
                 photos[normalizedCategory].push(processedPhoto);
             });
         }
@@ -78,7 +81,7 @@ async function saveEvaluation(evaluation) {
             const errorText = await response.text();
             throw new Error(`Falha ao salvar avaliação: ${errorText}`);
         }
-
+        
         return await response.json();
     } catch (error) {
         console.error('Erro ao salvar avaliação:', error);

@@ -211,25 +211,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const rankedPhotos = allPhotos.map(photo => {
                 const numEvaluations = photo.ratings.length;
-                let totalScoreSum = 0;
                 const criteriaScores = Object.fromEntries(criteriaKeys.map(key => [key, 0]));
-                let totalCriteriaCount = 0;
+                let totalAverageSum = 0;
                 
                 photo.ratings.forEach(ev => {
-                    for (const crit in ev.scores) {
-                        totalScoreSum += parseInt(ev.scores[crit]);
-                        totalCriteriaCount++;
-                       
-                        if(criteriaScores.hasOwnProperty(crit)) {
-                            criteriaScores[crit] += parseInt(ev.scores[crit]);
-                        }
-                        
-                        
-                    }
-                });
-                
+                    let evaluationScoreSum = 0;
+                    let criteriaCount = 0;
+                    // Normaliza as chaves dos scores recebidos para minúsculas e sem espaços
+                    const normalizedScores = Object.fromEntries(Object.entries(ev.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
 
-                const overallAverage = numEvaluations > 0 ? (totalScoreSum / totalCriteriaCount) : 0;
+                    for (const crit in normalizedScores) {
+                        if (criteriaScores.hasOwnProperty(crit)) {
+                            const score = parseInt(normalizedScores[crit], 10);
+                            evaluationScoreSum += score;
+                            criteriaScores[crit] += score;
+                            criteriaCount++;
+                        }
+                    }
+                    totalAverageSum += (criteriaCount > 0 ? (evaluationScoreSum / criteriaCount) : 0);
+                });
+                const overallAverage = numEvaluations > 0 ? (totalAverageSum / numEvaluations) : 0;
                 return { ...photo, average: overallAverage, numEvaluations: numEvaluations, criteriaScores: criteriaScores };
             });
 
@@ -237,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (b.average !== a.average) {
                     return b.average - a.average;
                 }
-                const tieBreakerCriteria = ['composicao-Foto', 'criatividade', 'enquadramento', 'contexto', 'composicao-cores', 'identificacao', 'resolucao'];
+                const tieBreakerCriteria = ['composicao-foto', 'criatividade', 'enquadramento', 'contexto', 'composicao-cores', 'identificacao', 'resolucao'];
                 for (const crit of tieBreakerCriteria) {
                     const scoreA = a.numEvaluations > 0 ? (a.criteriaScores[crit] / a.numEvaluations) : 0;
                     const scoreB = b.numEvaluations > 0 ? (b.criteriaScores[crit] / b.numEvaluations) : 0;
@@ -321,19 +322,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const rankedPhotos = allPhotos.map(photo => {
                 const numEvaluations = photo.ratings.length;
-                let totalScoreSum = 0;
                 const criteriaScores = Object.fromEntries(criteriaKeys.map(key => [key, 0]));
-                let totalCriteriaCount = 0;
+                let totalAverageSum = 0;
+
                 photo.ratings.forEach(ev => {
-                    for (const crit in ev.scores) {
-                        totalScoreSum += parseInt(ev.scores[crit]);
-                        totalCriteriaCount++;
-                        if(criteriaScores.hasOwnProperty(crit)) {
-                            criteriaScores[crit] += parseInt(ev.scores[crit]);
+                    let evaluationScoreSum = 0;
+                    let criteriaCount = 0;
+                    const normalizedScores = Object.fromEntries(Object.entries(ev.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
+
+                    for (const crit in normalizedScores) {
+                        if (criteriaScores.hasOwnProperty(crit)) {
+                            const score = parseInt(normalizedScores[crit], 10);
+                            evaluationScoreSum += score;
+                            criteriaScores[crit] += score;
+                            criteriaCount++;
                         }
                     }
+                    totalAverageSum += (criteriaCount > 0 ? (evaluationScoreSum / criteriaCount) : 0);
                 });
-                const overallAverage = numEvaluations > 0 ? (totalScoreSum / totalCriteriaCount) : 0;
+                const overallAverage = numEvaluations > 0 ? (totalAverageSum / numEvaluations) : 0;
                 return { ...photo, average: overallAverage, numEvaluations: numEvaluations, criteriaScores: criteriaScores };
             }).sort((a, b) => b.average - a.average);
 
@@ -367,7 +374,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function formatCriterionName(name) {
-            return name.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            // Substitui hífens por espaços e capitaliza a primeira letra de cada palavra de forma segura.
+            // Isso evita a capitalização incorreta após caracteres acentuados.
+            return name.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, char => char.toUpperCase());
         }
 
         function renderEvaluationDetails(detailsPanel, photo) {
@@ -393,9 +402,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 photo.ratings.forEach((evaluation, index) => {
                     carouselHtml += '<div class="details-carousel-slide">';
                     carouselHtml += `<h4>Avaliação de: ${evaluation.evaluator}</h4>`;
+                    const normalizedScores = Object.fromEntries(Object.entries(evaluation.scores).map(([k, v]) => [k.toLowerCase().replace(/\s+/g, '-'), v]));
                     carouselHtml += '<table class="details-table"><tbody>';
-                    for (const crit in evaluation.scores) {
-                        carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${evaluation.scores[crit]}</td></tr>`;
+                    for (const crit in normalizedScores) {
+                        carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${normalizedScores[crit]}</td></tr>`;
                     }
                     carouselHtml += '</tbody></table>';
                     carouselHtml += `<p><strong>Comentários:</strong> ${evaluation.comments || 'Nenhum'}</p>`;
@@ -614,8 +624,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             showCustomConfirm('Tem certeza que deseja enviar esta avaliação?', async () => {
                 const currentPhoto = photos[currentCategory][currentPhotoIndex];
+                
                 const evaluation = {
                     photoId: currentPhoto.id,
+                    participant: currentPhoto.participant,
+                    category: currentCategory.toUpperCase(),
                     evaluator: loggedInUser.username,
                     scores: {},
                     comments: document.getElementById('comments').value
