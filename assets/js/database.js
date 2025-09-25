@@ -128,7 +128,6 @@ async function fetchPhotos() {
                 ratings: photo.ratings || [] // Garante que 'ratings' seja sempre um array
             });
         });
-
    
     } catch (error) {
         console.error('Erro ao buscar fotos do Firestore:', error);

@@ -23,19 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Page specific logic
-    switch (page) {
-        case 'login.html':
-            handleLoginPage();
-            break;
-        case 'admin.html':
-            handleAdminPage();
-            break;
-        case 'avaliacao.html':
-            handleEvaluationPage();
-            break;
-    }
-
     const customAlert = document.getElementById('custom-alert');
     const customAlertMessage = document.getElementById('custom-alert-message');
     let customAlertClose = document.getElementById('custom-alert-close');
@@ -91,6 +78,31 @@ document.addEventListener('DOMContentLoaded', function () {
         customConfirmCancel.addEventListener('click', closeConfirm);
     }
 
+    // --- Funções de Controle do Spinner ---
+    const spinnerOverlay = document.getElementById('spinner-overlay');
+
+    function showSpinner() {
+        if (spinnerOverlay) spinnerOverlay.style.display = 'flex';
+    }
+
+    function hideSpinner() {
+        if (spinnerOverlay) spinnerOverlay.style.display = 'none';
+    }
+
+    // Page specific logic
+    switch (page) {
+        case 'login.html':
+            handleLoginPage();
+            break;
+        case 'admin.html':
+            handleAdminPage();
+            break;
+        case 'avaliacao.html':
+            handleEvaluationPage();
+            break;
+    }
+
+
     function handleLoginPage() {
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
@@ -99,18 +111,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 const username = e.target.username.value; // Agora é o email
                 const password = e.target.password.value; 
 
-                const result = await loginUser(username, password);
+                showSpinner();
+                try {
+                    const result = await loginUser(username, password);
 
-                if (result.status === 'success' && result.user) {
-                    localStorage.setItem('loggedInUser', JSON.stringify(result.user));
-                    if (result.user.role === 'admin') {
-                        window.location.href = 'admin.html';
+                    if (result.status === 'success' && result.user) {
+                        localStorage.setItem('loggedInUser', JSON.stringify(result.user));
+                        if (result.user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'avaliacao.html';
+                        }
                     } else {
-                        window.location.href = 'avaliacao.html';
+                        hideSpinner(); // Esconde o spinner apenas se o login falhar
+                        const errorMessage = result.message || 'Usuário ou senha inválidos!';
+                        showCustomAlert(errorMessage);
                     }
-                } else {
-                    const errorMessage = result.message || 'Usuário ou senha inválidos!';
-                    showCustomAlert(errorMessage);
+                } catch (error) {
+                    hideSpinner();
+                    showCustomAlert('Ocorreu um erro inesperado durante o login.');
                 }
             });
         }
@@ -135,16 +154,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            showCustomAlert('Registrando usuário...');
-            const result = await registerNewUser(email, password, role);
-            
-            if (result.status === 'success') {
-                showCustomAlert(result.message || 'Usuário registrado com sucesso!');
-                addUserForm.reset();
-            } else {
-                showCustomAlert(`Erro ao registrar usuário: ${result.message}`);
+            showSpinner();
+            try {
+                const result = await registerNewUser(email, password, role);
+                if (result.status === 'success') {
+                    showCustomAlert(result.message || 'Usuário registrado com sucesso!');
+                    addUserForm.reset();
+                } else {
+                    showCustomAlert(`Erro ao registrar usuário: ${result.message}`);
+                }
+                await renderUsers(); // Re-renderiza a lista de usuários após adicionar um novo
+            } finally {
+                hideSpinner();
             }
-            renderUsers(); // Re-renderiza a lista de usuários após adicionar um novo
         });
         const rankingCategorySelect = document.getElementById('ranking-category-select');        
         const allCategories = ['fauna', 'flora', 'agua', 'destruicao', 'pesquisas', 'religiosidade', 'povos'];
@@ -176,12 +198,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         syncPhotosBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            showCustomAlert('Sincronizando com o Google Drive...');
-            const result = await syncPhotosWithDrive();
-            await fetchPhotos(); // Recarrega as fotos do Firestore
-            renderPhotos();
-            renderRanking(); // Recarrega o ranking com as novas fotos
-            showCustomAlert('Sincronização concluída!');
+            showSpinner();
+            try {
+                showCustomAlert('Sincronizando com o Google Drive... Isso pode levar um momento.');
+                await syncPhotosWithDrive();
+                await fetchPhotos(); // Recarrega as fotos do Firestore
+                renderPhotos();
+                renderRanking(); // Recarrega o ranking com as novas fotos
+                showCustomAlert('Sincronização concluída!');
+            } finally {
+                hideSpinner();
+            }
         });
         
 
@@ -189,15 +216,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const usersTableBody = document.querySelector('#users-table tbody');
 
         async function renderUsers() {
-            usersTableBody.innerHTML = ''; // Limpa as linhas existentes
-            const users = await fetchUsers(); // Busca todos os usuários do Firestore
+            showSpinner();
+            usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Carregando usuários...</td></tr>';
+            try {
+                const users = await fetchUsers(); // Busca todos os usuários do Firestore
 
-            if (users.length === 0) {
-                usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum usuário cadastrado.</td></tr>';
-                return;
-            }
+                if (users.length === 0) {
+                    usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum usuário cadastrado.</td></tr>';
+                    return;
+                }
 
-            users.forEach(user => {
+                usersTableBody.innerHTML = ''; // Limpa a mensagem de carregamento
+                users.forEach(user => {
                 const row = usersTableBody.insertRow();
                 row.insertCell(0).textContent = user.username;
                 row.insertCell(1).textContent = user.role === 'admin' ? 'Administrador' : 'Avaliador';
@@ -221,33 +251,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 deleteButton.addEventListener('click', async () => {
                     showCustomConfirm(`Tem certeza que deseja excluir o usuário '${user.username}'?`, async () => {
-                        showCustomAlert('Excluindo usuário...');
+                        showSpinner();
                         try {
                             const result = await deleteUser(user.username, loggedInUsername);
                             if (result.status === 'success') {
                                 showCustomAlert(result.message || `Usuário '${user.username}' excluído com sucesso!`);
-                                renderUsers(); // Re-renderiza a lista de usuários
+                                await renderUsers(); // Re-renderiza a lista de usuários
                             } else {
                                 showCustomAlert(`Erro ao excluir usuário: ${result.message}`);
                             }
                         } catch (error) {
                             console.error('Erro ao excluir usuário:', error);
                             showCustomAlert(`Erro inesperado ao excluir usuário: ${error.message}`);
+                        } finally {
+                            hideSpinner();
                         }
                     });
                 });
                 actionsCell.appendChild(deleteButton);
             });
+            } finally {
+                hideSpinner();
+            }
         }
 
         // Renderização inicial dos usuários
-        await renderUsers();
+        // A chamada inicial será feita dentro de initialLoad
 
         // --- Lógica de Abas ---
         const tabButtons = document.querySelectorAll('.tab-navigation .tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
 
-        function showTab(tabId) {
+        async function showTab(tabId) {
             tabContents.forEach(content => {
                 content.classList.remove('active');
             });
@@ -260,10 +295,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Render content based on active tab
             if (tabId === 'user-management-tab') {
-                renderUsers(); // Garante que a lista de usuários esteja atualizada
+                await renderUsers(); // Garante que a lista de usuários esteja atualizada
             } else if (tabId === 'photos-ranking-tab') {
-                renderPhotos();
-                renderRanking();
+                await renderPhotos();
+                await renderRanking();
             }
         }
 
@@ -273,10 +308,17 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Carrega todos os dados iniciais
-        await fetchPhotos(); // Busca todas as fotos do Firestore uma vez
-        await fetchUsers(); // Busca todos os usuários do Firestore uma vez
-        showTab('user-management-tab'); // Define a aba de gerenciamento de usuários como padrão
+        async function initialLoad() {
+            showSpinner();
+            try {
+                await fetchPhotos(); // Busca todas as fotos do Firestore uma vez
+                await fetchUsers(); // Busca todos os usuários do Firestore uma vez
+                await showTab('user-management-tab'); // Define a aba de gerenciamento de usuários como padrão
+            } finally {
+                hideSpinner();
+            }
+        }
+        await initialLoad();
         
         function renderPhotos() {
             photoListContainer.innerHTML = '';
@@ -309,10 +351,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         async function renderRanking() {
+            showSpinner();
             const rankingList = document.getElementById('ranking-list');
             const selectedCategory = rankingCategorySelect.value;
             const criteriaKeys = ['enquadramento', 'criatividade', 'contexto', 'composicao-foto', 'composicao-cores', 'identificacao', 'resolucao'];
             rankingList.innerHTML = '';
+            try {
 
             let allPhotos = [];
             for (const category in photos) {
@@ -419,6 +463,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             });
+            } finally {
+                hideSpinner();
+            }
         }
 
         async function exportRankingToCSV() {
@@ -736,6 +783,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             showCustomConfirm('Tem certeza que deseja enviar esta avaliação?', async () => {
+                showSpinner();
                 const currentPhoto = photos[currentCategory][currentPhotoIndex];
                 
                 const evaluation = {
@@ -791,6 +839,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 } catch (error) {
                     console.error('Erro ao enviar avaliação:', error);
                     showCustomAlert('Ocorreu um erro ao enviar sua avaliação. Tente novamente.');
+                } finally {
+                    hideSpinner();
                 }
             });
         });
