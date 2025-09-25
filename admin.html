@@ -15,51 +15,74 @@
             <button id="logout-button">Sair</button>
         </nav>
     </header>
-    <main>
-            <div class="admin-layout">
-                <section id="photo-management" class="admin-form-section">
-                    <h2>Gerenciamento de Fotos</h2>
-                    <form id="add-photo-form">
-                        <div class="input-group file-upload-group">
-                            <label for="photo-file">Selecione a Foto</label>
-                            <input type="file" id="photo-file" name="photo-file" accept="image/*" required class="file-input">
-                        </div>
-                        <div class="input-group">
-                            <label for="participant-name">Nome do Participante</label>
-                            <input type="text" id="participant-name" name="participant-name" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="category-select">Categoria</label>
-                            <select id="category-select" name="category-select" required>
-                                <option value="fauna">Fauna</option>
-                                <option value="flora">Flora</option>
-                                <option value="agua">Água</option>
-                                <option value="destruicao">Destruição do Cerrado</option>
-                                <option value="pesquisas">Pesquisas Científicas</option>
-                                <option value="religiosidade">Religiosidade</option>
-                                <option value="povos">Povos Tradicionais</option>
-                            </select>
-                        </div>
-                        <button type="submit">Adicionar Foto</button>
-                    </form>
-                </section>
-                <section class="admin-list-section">
-                    <h2>Fotos Adicionadas</h2>
-                    <div id="photo-list-container">
-                    </div>
-                </section>
-                <section class="admin-ranking-section">
-                    <h2>Ranking de Fotos</h2>
+    <main class="admin-layout">
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="user-management-tab">Gerenciamento de Usuários</button>
+            <button class="tab-button" data-tab="photos-ranking-tab">Gerenciamento de Fotos</button>
+        </div>
+
+        <div id="user-management-tab" class="tab-content active">
+            <section id="user-management" class="admin-section">
+                <h2>Registrar Novo Usuário</h2>
+                <form id="add-user-form">
                     <div class="input-group">
-                        <label for="ranking-category-select">Filtrar por Categoria:</label>
-                        <select id="ranking-category-select">
-                            <option value="all">Todas as Categorias</option>
-                        </select>
-                        <button type="button" id="export-csv-btn" class="btn" style="width: auto; margin-top: 1rem;">Exportar para CSV</button>
+                        <label for="user-email">Nome de Usuário</label>
+                        <input type="text" id="user-email" name="user-email" required>
                     </div>
-                    <ol id="ranking-list"></ol>
-                </section>
-            </div>
+                    <div class="input-group">
+                        <label for="user-password">Senha</label>
+                        <input type="password" id="user-password" name="user-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="user-role">Função</label>
+                        <select id="user-role" name="user-role" required>
+                            <option value="evaluator">Avaliador</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <button type="submit">Registrar Usuário</button>
+                </form>
+            </section>
+
+            <section id="user-list-section" class="admin-section">
+                <h2>Usuários Cadastrados</h2>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nome de Usuário</th>
+                            <th>Função</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- User rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <div id="photos-ranking-tab" class="tab-content">
+            <section class="admin-section">
+                <h2>Gerenciamento de Fotos</h2>
+                <button id="sync-photos-btn" class="btn" style="width: 100%;">Sincronizar Fotos do Google Drive</button>
+            </section>
+            <section class="admin-section">
+                <h2>Fotos Sincronizadas</h2>
+                <div id="photo-list-container">
+                </div>
+            </section>
+            <section class="admin-section">
+                <h2>Ranking de Fotos</h2>
+                <div class="input-group">
+                    <label for="ranking-category-select">Filtrar por Categoria:</label>
+                    <select id="ranking-category-select">
+                        <option value="all">Todas as Categorias</option>
+                    </select>
+                    <button type="button" id="export-csv-btn" class="btn" style="width: auto; margin-top: 1rem;">Exportar para CSV</button>
+                </div>
+                <ol id="ranking-list"></ol>
+            </section>
+        </div>
     </main>
     </div>
 
@@ -67,6 +90,16 @@
         <div class="custom-alert-box">
             <p id="custom-alert-message"></p>
             <button id="custom-alert-close">OK</button>
+        </div>
+    </div>
+
+    <div id="custom-confirm" class="custom-alert-overlay" style="display: none;">
+        <div class="custom-alert-box">
+            <p id="custom-confirm-message"></p>
+            <div class="confirm-buttons">
+                <button id="custom-confirm-cancel" class="btn-secondary">Cancelar</button>
+                <button id="custom-confirm-ok" class="btn">Confirmar</button>
+            </div>
         </div>
     </div>
 
@@ -78,6 +111,10 @@
         </div>
     </div>
 
+    <!-- SDKs do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="assets/js/database.js"></script>
     <script src="assets/js/app.js"></script>
 </body>

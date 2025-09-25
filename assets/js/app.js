@@ -96,8 +96,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (loginForm) {
             loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const username = e.target.username.value;
-                const password = e.target.password.value;
+                const username = e.target.username.value; // Agora é o email
+                const password = e.target.password.value; 
 
                 const result = await loginUser(username, password);
 
@@ -120,6 +120,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const logoutButton = document.getElementById('logout-button');
         if (logoutButton) logoutButton.addEventListener('click', logout);
 
+        // --- Variáveis e Funções de Gerenciamento de Usuários ---
+        const loggedInUsername = loggedInUser.username; // Obtém o nome de usuário do admin logado
+        // --- Gerenciamento de Usuários ---
+        const addUserForm = document.getElementById('add-user-form');
+        addUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = e.target['user-email'].value;
+            const password = e.target['user-password'].value;
+            const role = e.target['user-role'].value;
+
+            showCustomAlert('Registrando usuário...');
+            const result = await registerNewUser(email, password, role);
+            
+            if (result.status === 'success') {
+                showCustomAlert(result.message || 'Usuário registrado com sucesso!');
+                addUserForm.reset();
+            } else {
+                showCustomAlert(`Erro ao registrar usuário: ${result.message}`);
+            }
+            renderUsers(); // Re-renderiza a lista de usuários após adicionar um novo
+        });
         const rankingCategorySelect = document.getElementById('ranking-category-select');        
         const allCategories = ['fauna', 'flora', 'agua', 'destruicao', 'pesquisas', 'religiosidade', 'povos'];
         allCategories.forEach(category => {
@@ -145,36 +166,124 @@ document.addEventListener('DOMContentLoaded', function () {
         const exportCsvBtn = document.getElementById('export-csv-btn');
         exportCsvBtn.addEventListener('click', exportRankingToCSV);
 
-        const addPhotoForm = document.getElementById('add-photo-form');
+        const syncPhotosBtn = document.getElementById('sync-photos-btn');
         const photoListContainer = document.getElementById('photo-list-container');
 
-        const syncButton = addPhotoForm.querySelector('button[type="submit"]');
-        syncButton.textContent = 'Sincronizar com Google Drive';
-        document.getElementById('photo-file').closest('.input-group').remove();
-        document.getElementById('participant-name').closest('.input-group').remove();
-        document.getElementById('category-select').closest('.input-group').remove();
-
-        addPhotoForm.addEventListener('submit', async function (e) {
+        syncPhotosBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             showCustomAlert('Sincronizando com o Google Drive...');
-            await fetchPhotos();
+            const result = await syncPhotosWithDrive();
+            await fetchPhotos(); // Recarrega as fotos do Firestore
             renderPhotos();
-            renderRanking();
+            renderRanking(); // Recarrega o ranking com as novas fotos
             showCustomAlert('Sincronização concluída!');
         });
+        
 
+        // --- Gerenciamento de Usuários (Listagem e Exclusão) ---
+        const usersTableBody = document.querySelector('#users-table tbody');
+
+        async function renderUsers() {
+            usersTableBody.innerHTML = ''; // Limpa as linhas existentes
+            const users = await fetchUsers(); // Busca todos os usuários do Firestore
+
+            if (users.length === 0) {
+                usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum usuário cadastrado.</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const row = usersTableBody.insertRow();
+                row.insertCell(0).textContent = user.username;
+                row.insertCell(1).textContent = user.role === 'admin' ? 'Administrador' : 'Avaliador';
+
+                const actionsCell = row.insertCell(2);
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Excluir';
+                deleteButton.className = 'btn remove-btn';
+                deleteButton.dataset.username = user.username;
+
+                // Regras de exclusão (exibição no frontend)
+                if (user.username === 'admin' && loggedInUsername !== 'admin') {
+                    // Outros admins não podem deletar o admin principal
+                    deleteButton.disabled = true;
+                    deleteButton.title = 'Você não pode deletar o administrador principal.';
+                } else if (user.username === loggedInUsername) {
+                    // Admins não podem deletar a si mesmos
+                    deleteButton.disabled = true;
+                    deleteButton.title = 'Você não pode deletar sua própria conta.';
+                }
+
+                deleteButton.addEventListener('click', async () => {
+                    showCustomConfirm(`Tem certeza que deseja excluir o usuário '${user.username}'?`, async () => {
+                        showCustomAlert('Excluindo usuário...');
+                        try {
+                            const result = await deleteUser(user.username, loggedInUsername);
+                            if (result.status === 'success') {
+                                showCustomAlert(result.message || `Usuário '${user.username}' excluído com sucesso!`);
+                                renderUsers(); // Re-renderiza a lista de usuários
+                            } else {
+                                showCustomAlert(`Erro ao excluir usuário: ${result.message}`);
+                            }
+                        } catch (error) {
+                            console.error('Erro ao excluir usuário:', error);
+                            showCustomAlert(`Erro inesperado ao excluir usuário: ${error.message}`);
+                        }
+                    });
+                });
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        // Renderização inicial dos usuários
+        await renderUsers();
+
+        // --- Lógica de Abas ---
+        const tabButtons = document.querySelectorAll('.tab-navigation .tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function showTab(tabId) {
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
+
+            // Render content based on active tab
+            if (tabId === 'user-management-tab') {
+                renderUsers(); // Garante que a lista de usuários esteja atualizada
+            } else if (tabId === 'photos-ranking-tab') {
+                renderPhotos();
+                renderRanking();
+            }
+        }
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                showTab(button.dataset.tab);
+            });
+        });
+
+        // Carrega todos os dados iniciais
+        await fetchPhotos(); // Busca todas as fotos do Firestore uma vez
+        await fetchUsers(); // Busca todos os usuários do Firestore uma vez
+        showTab('user-management-tab'); // Define a aba de gerenciamento de usuários como padrão
+        
         function renderPhotos() {
             photoListContainer.innerHTML = '';
             let allPhotos = [];
 
             for (const category in photos) {
-                photos[category].forEach(photo => {
-                    allPhotos.push({ ...photo, category: category });
-                });
+                // Acessa o array de fotos para cada categoria e adiciona ao array geral
+                allPhotos.push(...photos[category]);
             }
 
             if (allPhotos.length === 0) {
-                photoListContainer.innerHTML = '<p style="text-align: center; width: 100%;">Nenhuma foto adicionada ainda.</p>';
+                photoListContainer.innerHTML = '<p style="text-align: center; width: 100%;">Nenhuma foto sincronizada ainda.</p>';
                 return;
             }
 
@@ -203,16 +312,14 @@ document.addEventListener('DOMContentLoaded', function () {
             let allPhotos = [];
             for (const category in photos) {
                 if (selectedCategory === 'all' || selectedCategory === category) {
-                    photos[category].forEach(photo => {
-                        allPhotos.push({ ...photo, category: category });
-                    });
+                    allPhotos.push(...photos[category]);
                 }
             }
 
             const rankedPhotos = allPhotos.map(photo => {
                 const numEvaluations = photo.ratings.length;
                 const criteriaScores = Object.fromEntries(criteriaKeys.map(key => [key, 0]));
-                let totalAverageSum = 0;
+                let totalAverageSum = 0; // Soma das médias de cada avaliação
                 
                 photo.ratings.forEach(ev => {
                     let evaluationScoreSum = 0;
@@ -220,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     for (const crit in ev.scores) { 
                         // Agora os scores já vêm normalizados do backend
-                        if (criteriaScores.hasOwnProperty(crit)) {
+                        if (Object.prototype.hasOwnProperty.call(criteriaScores, crit)) {
                             const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
                             criteriaScores[crit] += score;
@@ -239,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (b.average !== a.average) {
                     return b.average - a.average;
                 }
-                const tieBreakerCriteria = ['composicao foto', 'criatividade', 'enquadramento', 'contexto', 'composicao cores', 'identificacao', 'resolucao'];
+                const tieBreakerCriteria = ['composicao-foto', 'criatividade', 'enquadramento', 'contexto', 'composicao-cores', 'identificacao', 'resolucao'];
                 for (const crit of tieBreakerCriteria) {
                     // Garante que se um critério não existir, seu valor seja 0 para evitar NaN.
                     const totalScoreA = a.criteriaScores[crit] || 0;
@@ -284,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
                          <div class="photo-item-category">${photo.category.replace(/_/g, ' ')}</div>
                         <button class="details-btn" data-photoid="rank-${photo.id}">Ver Detalhes</button>
                         <button class="remove-btn" data-id="${photo.id}" data-category="${photo.category}">Remover</button>
-                        
+
                     </div>
                     <div class="photo-details" id="details-rank-${photo.id}">
                         ${detailsHtml}
@@ -313,14 +420,12 @@ document.addEventListener('DOMContentLoaded', function () {
             showCustomAlert('Gerando CSV...');
             
             const selectedCategory = rankingCategorySelect.value;
-            const criteriaKeys = ['enquadramento', 'criatividade', 'contexto', 'composicao foto', 'composicao cores', 'identificacao', 'resolucao'];
+            const criteriaKeys = ['enquadramento', 'criatividade', 'contexto', 'composicao-foto', 'composicao-cores', 'identificacao', 'resolucao'];
             
             let allPhotos = [];
             for (const category in photos) {
                 if (selectedCategory === 'all' || selectedCategory === category) {
-                    photos[category].forEach(photo => {
-                        allPhotos.push({ ...photo, category: category });
-                    });
+                    allPhotos.push(...photos[category]);
                 }
             }
 
@@ -334,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     let criteriaCount = 0;
 
                     for (const crit in ev.scores) { // Agora os scores já vêm normalizados do backend
-                        if (criteriaScores.hasOwnProperty(crit)) {
+                        if (Object.prototype.hasOwnProperty.call(criteriaScores, crit)) {
                             const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
                             criteriaScores[crit] += score;
@@ -379,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function formatCriterionName(name) {
             // Substitui hífens por espaços e capitaliza a primeira letra de cada palavra de forma segura.
             // Agora lida com espaços diretamente e capitaliza.
-            return name.replace(/(^\w|\s\w)/g, char => char.toUpperCase());
+            return name.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, char => char.toUpperCase());
         }
 
         function renderEvaluationDetails(detailsPanel, photo, criteriaKeys) {
@@ -491,9 +596,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             };
         }
-        await fetchPhotos();
-        renderPhotos();
-        renderRanking();
     }
 
     async function handleEvaluationPage() {
@@ -634,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const evaluation = {
                     photoId: currentPhoto.id,
                     participant: currentPhoto.participant,
-                    category: currentCategory.toUpperCase(),
+                    category: currentCategory,
                     evaluator: loggedInUser.username,
                     scores: {},
                     comments: document.getElementById('comments').value
@@ -645,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 try {
-                    // Salva a avaliação usando o Google Apps Script
+                    // Salva a avaliação diretamente no Firestore
                     const result = await saveEvaluation(evaluation);
 
                     if (result.status !== 'success') throw new Error(result.message || 'Falha ao enviar avaliação para o servidor.');
@@ -659,23 +761,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     displayPhoto(currentCategory, currentPhotoIndex);
 
-                    showCustomAlert('Sua avaliação foi registrada com sucesso!', () => {
-                        if (currentPhotoIndex < photos[currentCategory].length - 1) {
-                            nextBtn.click();
-                        } else {
-                            showCustomAlert('Você avaliou todas as fotos desta categoria!', () => {
-                                const currentCategoryIndex = Array.from(categorySelect.options).findIndex(opt => opt.value === currentCategory);
-                                const nextCategoryIndex = currentCategoryIndex + 1;
+                    // Lógica de navegação após o sucesso da avaliação
+                    const isLastPhotoInCategory = currentPhotoIndex >= photos[currentCategory].length - 1;
 
-                                if (nextCategoryIndex < categorySelect.options.length) {
-                                    categorySelect.selectedIndex = nextCategoryIndex;
-                                    categorySelect.dispatchEvent(new Event('change'));
-                                } else {
-                                    showCustomAlert('Parabéns! Você avaliou todas as fotos de todas as categorias.');
-                                }
+                    if (isLastPhotoInCategory) {
+                        const currentCategoryIndex = Array.from(categorySelect.options).findIndex(opt => opt.value === currentCategory);
+                        const isLastCategory = currentCategoryIndex >= categorySelect.options.length - 1;
+
+                        if (isLastCategory) {
+                            showCustomAlert('Parabéns! Você avaliou todas as fotos de todas as categorias.');
+                        } else {
+                            showCustomAlert('Você avaliou todas as fotos desta categoria! Avançando para a próxima...', () => {
+                                const nextCategoryIndex = currentCategoryIndex + 1;
+                                categorySelect.selectedIndex = nextCategoryIndex;
+                                categorySelect.dispatchEvent(new Event('change'));
                             });
                         }
-                    });
+                    } else {
+                        showCustomAlert('Sua avaliação foi registrada com sucesso!', () => {
+                            nextBtn.click(); // Avança para a próxima foto na mesma categoria
+                        });
+                    }
 
                 } catch (error) {
                     console.error('Erro ao enviar avaliação:', error);
