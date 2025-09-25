@@ -35,7 +35,7 @@ async function registerNewUser(email, password, role) {
         if (result.status === 'success' && result.data) {
             return { status: 'success', message: result.data.message };
         }
-        return result;
+        
     } catch (error) {
         console.error("Erro ao chamar o backend para registrar usuário:", error);
         return { status: 'error', message: error.message };

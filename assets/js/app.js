@@ -130,6 +130,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const password = e.target['user-password'].value;
             const role = e.target['user-role'].value;
 
+            if (password.length < 6) {
+                showCustomAlert('A senha deve ter no mínimo 6 caracteres.');
+                return;
+            }
+
             showCustomAlert('Registrando usuário...');
             const result = await registerNewUser(email, password, role);
             
