@@ -1,14 +1,14 @@
-// --- CONFIGURAÇÃO DO FIREBASE ---
-// A variável firebaseConfig é carregada a partir de firebase-config.js
-// Inicializa o Firebase
+
+
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ATENÇÃO: Substitua pela URL do seu script publicado no Google Apps Script
+
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyOPOIFMlLnM_iZxkEogKzlAj8kZcse6wj3aoJr2XOyWvMKLH_Iq2hKNxjDAl1ZANBn/exec';
 
-// Domínio falso para criar e-mails a partir de nomes de usuário
+
 const FAKE_EMAIL_DOMAIN = '@seu-olhar.app';
 
 let photos = {};
@@ -31,7 +31,7 @@ async function registerNewUser(email, password, role) {
         });
 
         const result = await response.json();
-        // O backend retorna a mensagem dentro de um objeto 'data'.
+        
         if (result.status === 'success' && result.data) {
             return { status: 'success', message: result.data.message };
         }
@@ -80,10 +80,10 @@ async function loginUser(email, password) {
         const userCredential = await auth.signInWithEmailAndPassword(internalEmail, password);
         const user = userCredential.user;
 
-        // Busca a função (role) do usuário no Firestore.
-        // Após o login, o `user` objeto contém o e-mail usado para autenticar.
-        // No entanto, nosso documento de usuário no Firestore usa o `username` como ID.
-        // Portanto, continuamos a usar o `username` (que derivamos do input do formulário) para buscar o documento.
+        
+        
+        
+        
         const userDoc = await db.collection('users').doc(username).get();
         if (!userDoc.exists) {
             throw new Error("Dados do usuário não encontrados no banco de dados.");
@@ -99,11 +99,11 @@ async function loginUser(email, password) {
         };
     } catch (error) {
         console.error('Erro durante o login:', error.code, error.message);
-        // Fornece uma mensagem mais amigável para o usuário final
+        
         if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
             return { status: 'error', message: 'Usuário ou senha inválidos. Verifique os dados e tente novamente.' };
         }
-        // Para outros erros, mostra a mensagem do Firebase
+        
         return { status: 'error', message: `Erro de login: ${error.message}` };
     }
 }
@@ -115,17 +115,17 @@ async function fetchPhotos() {
     try {
         const snapshot = await db.collection('photos').get();
         const allPhotos = snapshot.docs.map(doc => doc.data());
-        photos = {}; // Limpa o objeto de fotos
+        photos = {}; 
  
         allPhotos.forEach(photo => {
-            const category = photo.category; // ex: 'fauna'
+            const category = photo.category; 
             if (!photos[category]) {
                 photos[category] = [];
             }
             photos[category].push({
                 ...photo,
                 url: `https://lh3.googleusercontent.com/d/${photo.id}`,
-                ratings: photo.ratings || [] // Garante que 'ratings' seja sempre um array
+                ratings: photo.ratings || [] 
             });
         });
    
@@ -143,7 +143,7 @@ async function saveEvaluation(evaluation) {
     try {
         const photoRef = db.collection('photos').doc(evaluation.photoId);
 
-        // Usa uma transação para garantir a atomicidade da operação
+        
         await db.runTransaction(async (transaction) => {
             const photoDoc = await transaction.get(photoRef);
             if (!photoDoc.exists) {
@@ -153,14 +153,14 @@ async function saveEvaluation(evaluation) {
             const data = photoDoc.data();
             const ratings = data.ratings || [];
 
-            // Verifica se o avaliador já avaliou esta foto
+            
             const existingEvalIndex = ratings.findIndex(r => r.evaluator === evaluation.evaluator);
 
             if (existingEvalIndex > -1) {
-                // Atualiza a avaliação existente
+                
                 ratings[existingEvalIndex] = evaluation;
             } else {
-                // Adiciona uma nova avaliação
+                
                 ratings.push(evaluation);
             }
 

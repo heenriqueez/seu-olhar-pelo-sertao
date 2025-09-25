@@ -25,48 +25,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const customAlert = document.getElementById('custom-alert');
     const customAlertMessage = document.getElementById('custom-alert-message');
-    let customAlertClose = document.getElementById('custom-alert-close');
+    const customAlertClose = document.getElementById('custom-alert-close');
 
     function showCustomAlert(message, onOk) {
         customAlertMessage.textContent = message;
         customAlert.style.display = 'flex';
         setTimeout(() => customAlert.classList.add('visible'), 10);
  
-        // Remove previous listener to avoid multiple triggers
-        const newOk = customAlertClose.cloneNode(true); // Use cloneNode to easily remove old listeners
-        if (customAlertClose.parentNode) {
-            customAlertClose.parentNode.replaceChild(newOk, customAlertClose);
-        }
-        customAlertClose = newOk; // Update reference
- 
         const okClickHandler = () => {
             customAlert.classList.remove('visible');
             setTimeout(() => customAlert.style.display = 'none', 300);
             if (onOk) onOk(); 
         };
-        customAlertClose.addEventListener('click', okClickHandler, { once: true }); // Use {once: true} to auto-remove listener
+        customAlertClose.addEventListener('click', okClickHandler, { once: true }); 
     }
 
     const customConfirm = document.getElementById('custom-confirm');
     const customConfirmMessage = document.getElementById('custom-confirm-message');
-    let customConfirmOk = document.getElementById('custom-confirm-ok');
+    const customConfirmOk = document.getElementById('custom-confirm-ok');
     const customConfirmCancel = document.getElementById('custom-confirm-cancel');
 
     function showCustomConfirm(message, onConfirm) {
         customConfirmMessage.textContent = message;
         customConfirm.style.display = 'flex';
         setTimeout(() => customConfirm.classList.add('visible'), 10);
-
-        // Remove previous listener to avoid multiple triggers
-        const newOk = customConfirmOk.cloneNode(true); // Use cloneNode to easily remove old listeners
-        if (customConfirmOk.parentNode) {
-            customConfirmOk.parentNode.replaceChild(newOk, customConfirmOk);
-        }
-        customConfirmOk = newOk; // Update reference
+        
+        
         customConfirmOk.addEventListener('click', () => {
             closeConfirm();
             onConfirm();
-        }, { once: true }); // Use {once: true} to auto-remove listener
+        }, { once: true }); 
     }
 
     const closeConfirm = () => {
@@ -78,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
         customConfirmCancel.addEventListener('click', closeConfirm);
     }
 
-    // --- Funções de Controle do Spinner ---
+    
     const spinnerOverlay = document.getElementById('spinner-overlay');
 
     function showSpinner() {
@@ -89,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (spinnerOverlay) spinnerOverlay.style.display = 'none';
     }
 
-    // Page specific logic
+    
     switch (page) {
         case 'login.html':
             handleLoginPage();
@@ -108,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (loginForm) {
             loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const username = e.target.username.value; // Agora é o email
+                const username = e.target.username.value; 
                 const password = e.target.password.value; 
 
                 showSpinner();
@@ -123,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             window.location.href = 'avaliacao.html';
                         }
                     } else {
-                        hideSpinner(); // Esconde o spinner apenas se o login falhar
+                        hideSpinner(); 
                         const errorMessage = result.message || 'Usuário ou senha inválidos!';
                         showCustomAlert(errorMessage);
                     }
@@ -139,9 +127,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const logoutButton = document.getElementById('logout-button');
         if (logoutButton) logoutButton.addEventListener('click', logout);
 
-        // --- Variáveis e Funções de Gerenciamento de Usuários ---
-        const loggedInUsername = loggedInUser.username; // Obtém o nome de usuário do admin logado
-        // --- Gerenciamento de Usuários ---
+        
+        const loggedInUsername = loggedInUser.username; 
+        
         const addUserForm = document.getElementById('add-user-form');
         addUserForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -163,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     showCustomAlert(`Erro ao registrar usuário: ${result.message}`);
                 }
-                await renderUsers(); // Re-renderiza a lista de usuários após adicionar um novo
+                await renderUsers(); 
             } finally {
                 hideSpinner();
             }
@@ -173,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
         allCategories.forEach(category => {
             const option = document.createElement('option');
             option.value = category;
-            // Mapeia as chaves para nomes formatados e acentuados
+            
             const categoryDisplayNames = {
                 'fauna': 'Fauna',
                 'flora': 'Flora',
@@ -202,9 +190,9 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 showCustomAlert('Sincronizando com o Google Drive... Isso pode levar um momento.');
                 await syncPhotosWithDrive();
-                await fetchPhotos(); // Recarrega as fotos do Firestore
+                await fetchPhotos(); 
                 renderPhotos();
-                renderRanking(); // Recarrega o ranking com as novas fotos
+                renderRanking(); 
                 showCustomAlert('Sincronização concluída!');
             } finally {
                 hideSpinner();
@@ -212,21 +200,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
 
-        // --- Gerenciamento de Usuários (Listagem e Exclusão) ---
+        
         const usersTableBody = document.querySelector('#users-table tbody');
 
         async function renderUsers() {
             showSpinner();
             usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Carregando usuários...</td></tr>';
             try {
-                const users = await fetchUsers(); // Busca todos os usuários do Firestore
+                const users = await fetchUsers(); 
 
                 if (users.length === 0) {
                     usersTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum usuário cadastrado.</td></tr>';
                     return;
                 }
 
-                usersTableBody.innerHTML = ''; // Limpa a mensagem de carregamento
+                usersTableBody.innerHTML = ''; 
                 users.forEach(user => {
                 const row = usersTableBody.insertRow();
                 row.insertCell(0).textContent = user.username;
@@ -238,13 +226,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 deleteButton.className = 'btn remove-btn';
                 deleteButton.dataset.username = user.username;
 
-                // Regras de exclusão (exibição no frontend)
+                
                 if (user.username === 'admin' && loggedInUsername !== 'admin') {
-                    // Outros admins não podem deletar o admin principal
+                    
                     deleteButton.disabled = true;
                     deleteButton.title = 'Você não pode deletar o administrador principal.';
                 } else if (user.username === loggedInUsername) {
-                    // Admins não podem deletar a si mesmos
+                    
                     deleteButton.disabled = true;
                     deleteButton.title = 'Você não pode deletar sua própria conta.';
                 }
@@ -256,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             const result = await deleteUser(user.username, loggedInUsername);
                             if (result.status === 'success') {
                                 showCustomAlert(result.message || `Usuário '${user.username}' excluído com sucesso!`);
-                                await renderUsers(); // Re-renderiza a lista de usuários
+                                await renderUsers(); 
                             } else {
                                 showCustomAlert(`Erro ao excluir usuário: ${result.message}`);
                             }
@@ -275,10 +263,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Renderização inicial dos usuários
-        // A chamada inicial será feita dentro de initialLoad
+        
+        
 
-        // --- Lógica de Abas ---
+        
         const tabButtons = document.querySelectorAll('.tab-navigation .tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
 
@@ -293,9 +281,9 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById(tabId).classList.add('active');
             document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
 
-            // Render content based on active tab
+            
             if (tabId === 'user-management-tab') {
-                await renderUsers(); // Garante que a lista de usuários esteja atualizada
+                await renderUsers(); 
             } else if (tabId === 'photos-ranking-tab') {
                 await renderPhotos();
                 await renderRanking();
@@ -311,9 +299,9 @@ document.addEventListener('DOMContentLoaded', function () {
         async function initialLoad() {
             showSpinner();
             try {
-                await fetchPhotos(); // Busca todas as fotos do Firestore uma vez
-                await fetchUsers(); // Busca todos os usuários do Firestore uma vez
-                await showTab('user-management-tab'); // Define a aba de gerenciamento de usuários como padrão
+                await fetchPhotos(); 
+                await fetchUsers(); 
+                await showTab('user-management-tab'); 
             } finally {
                 hideSpinner();
             }
@@ -325,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let allPhotos = [];
 
             for (const category in photos) {
-                // Acessa o array de fotos para cada categoria e adiciona ao array geral
+                
                 allPhotos.push(...photos[category]);
             }
 
@@ -368,14 +356,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const rankedPhotos = allPhotos.map(photo => {
                 const numEvaluations = photo.ratings.length;
                 const criteriaScores = Object.fromEntries(criteriaKeys.map(key => [key, 0]));
-                let totalAverageSum = 0; // Soma das médias de cada avaliação
+                let totalAverageSum = 0; 
                 
                 photo.ratings.forEach(ev => {
                     let evaluationScoreSum = 0;
                     let criteriaCount = 0;
                     
                     for (const crit in ev.scores) { 
-                        // Agora os scores já vêm normalizados do backend
+                        
                         if (Object.prototype.hasOwnProperty.call(criteriaScores, crit)) {
                             const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
@@ -397,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 const tieBreakerCriteria = ['composicao-foto', 'criatividade', 'enquadramento', 'contexto', 'composicao-cores', 'identificacao', 'resolucao'];
                 for (const crit of tieBreakerCriteria) {
-                    // Garante que se um critério não existir, seu valor seja 0 para evitar NaN.
+                    
                     const totalScoreA = a.criteriaScores[crit] || 0;
                     const totalScoreB = b.criteriaScores[crit] || 0;
                     const scoreA = a.numEvaluations > 0 ? (totalScoreA / a.numEvaluations) : 0;
@@ -490,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     let evaluationScoreSum = 0;
                     let criteriaCount = 0;
 
-                    for (const crit in ev.scores) { // Agora os scores já vêm normalizados do backend
+                    for (const crit in ev.scores) { 
                         if (Object.prototype.hasOwnProperty.call(criteriaScores, crit)) {
                             const score = parseInt(ev.scores[crit], 10);
                             evaluationScoreSum += score;
@@ -534,8 +522,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function formatCriterionName(name) {
-            // Substitui hífens por espaços e capitaliza a primeira letra de cada palavra de forma segura.
-            // Agora lida com espaços diretamente e capitaliza.
+            
+            
             return name.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, char => char.toUpperCase());
         }
 
@@ -545,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="details-carousel-track">
             `;
 
-            // Slide 1: Médias Gerais
+            
             carouselHtml += '<div class="details-carousel-slide">';
             carouselHtml += '<h4>Médias Gerais</h4>';
             if (photo.numEvaluations > 0) {
@@ -562,12 +550,12 @@ document.addEventListener('DOMContentLoaded', function () {
             carouselHtml += '</div>';
             
             if (photo.numEvaluations > 0) {
-                // Slides seguintes: Avaliações Individuais
+                
                 photo.ratings.forEach((evaluation, index) => {
                     carouselHtml += '<div class="details-carousel-slide">';
                     carouselHtml += `<h4>Avaliação de: ${evaluation.evaluator}</h4>`;
                     carouselHtml += '<table class="details-table"><tbody>';
-                    for (const crit in evaluation.scores) { // Agora os scores já vêm normalizados
+                    for (const crit in evaluation.scores) { 
                         carouselHtml += `<tr><td>${formatCriterionName(crit)}</td><td>${evaluation.scores[crit]}</td></tr>`;
                     }
                     carouselHtml += '</tbody></table>';
@@ -800,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 try {
-                    // Salva a avaliação diretamente no Firestore
+                    
                     const result = await saveEvaluation(evaluation);
 
                     if (result.status !== 'success') throw new Error(result.message || 'Falha ao enviar avaliação para o servidor.');
@@ -814,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     displayPhoto(currentCategory, currentPhotoIndex);
 
-                    // Lógica de navegação após o sucesso da avaliação
+                    
                     const isLastPhotoInCategory = currentPhotoIndex >= photos[currentCategory].length - 1;
 
                     if (isLastPhotoInCategory) {
@@ -832,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     } else {
                         showCustomAlert('Sua avaliação foi registrada com sucesso!', () => {
-                            nextBtn.click(); // Avança para a próxima foto na mesma categoria
+                            nextBtn.click(); 
                         });
                     }
 

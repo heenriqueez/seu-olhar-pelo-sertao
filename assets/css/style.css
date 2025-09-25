@@ -326,11 +326,11 @@ button:hover {
 .carousel-item {
     position: relative;
     margin: 0 1rem;
-    flex-shrink: 0; /* Impede que os itens encolham */
+    flex-shrink: 0; 
 }
 
 .carousel-item img {
-    height: 120px; /* Altura da imagem dentro do carrossel */
+    height: 120px; 
     border-radius: 5px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     display: block;
@@ -354,7 +354,7 @@ button:hover {
 
 @keyframes scroll {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); } /* Anima até a metade para criar o loop */
+    100% { transform: translateX(-50%); } 
 }
 
 .photo-item {
@@ -370,8 +370,8 @@ button:hover {
 .photo-item-header {
     display: flex;
     gap: 1rem;
-    align-items: center; /* Alinha verticalmente ao centro */
-    justify-content: space-between; /* Distribui o espaço */
+    align-items: center; 
+    justify-content: space-between; 
     width: 100%;
 }
 
@@ -394,7 +394,7 @@ button:hover {
 }
 
 .photo-item-category {
-    flex-basis: 150px; /* Largura base para a categoria */
+    flex-basis: 150px; 
     text-align: center;
     font-weight: bold;
     color: var(--secondary-color);
@@ -409,7 +409,7 @@ button:hover {
 }
 
 .photo-details.open {
-    max-height: 500px; /* Altura suficiente para o conteúdo */
+    max-height: 500px; 
     margin-top: 1rem;
     border-top: 1px solid var(--border-color);
     padding-top: 1rem;
@@ -423,9 +423,9 @@ button:hover {
 .photo-item button {
     width: auto;
     padding: 0.4rem 0.8rem;
-    font-size: 0.8rem; /* Reduz um pouco para caber melhor */
+    font-size: 0.8rem; 
     margin: 0;
-    white-space: nowrap; /* Impede que o texto do botão quebre */
+    white-space: nowrap; 
 }
 
 .photo-item .remove-btn {
@@ -461,9 +461,9 @@ button:hover {
     text-align: center;
 }
 
-#ranking-list li:nth-child(1) .rank-position { color: #ffd700; } /* Ouro */
-#ranking-list li:nth-child(2) .rank-position { color: #c0c0c0; } /* Prata */
-#ranking-list li:nth-child(3) .rank-position { color: #cd7f32; } /* Bronze */
+#ranking-list li:nth-child(1) .rank-position { color: #ffd700; } 
+#ranking-list li:nth-child(2) .rank-position { color: #c0c0c0; } 
+#ranking-list li:nth-child(3) .rank-position { color: #cd7f32; } 
 
 #ranking-list img {
     width: 80px;
@@ -500,9 +500,9 @@ button:hover {
     font-size: 0.9rem;
 }
 
-/* --- Estilos das Abas --- */
+
 .tab-content {
-    display: none; /* Esconde por padrão */
+    display: none; 
     flex-wrap: wrap;
     gap: 2rem;
     width: 100%;
@@ -513,12 +513,12 @@ button:hover {
     display: flex;
 }
 
-/* Faz com que os itens dentro das abas fiquem em coluna por padrão */
+
 #photos-ranking-tab, #user-management-tab {
     flex-direction: column;
 }
 
-/* --- Layout das seções do Admin --- */
+
 .admin-section {
     background-color: #f8f9fa;
     padding: 1.5rem;
@@ -533,15 +533,15 @@ button:hover {
 }
 
 .tab-content > .admin-section {
-    flex: 1; /* Faz as seções dividirem o espaço */
+    flex: 1; 
 }
 
 .tab-navigation {
     display: flex;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    width: 100%; /* Garante que as abas ocupem a largura total */
-    justify-content: flex-start; /* Alinha os botões à esquerda */
+    width: 100%; 
+    justify-content: flex-start; 
 }
 
 .tab-button {
@@ -554,7 +554,7 @@ button:hover {
     color: var(--secondary-color);
     border-bottom: 3px solid transparent;
     transition: all 0.3s ease;
-    white-space: nowrap; /* Evita que o texto do botão quebre */
+    white-space: nowrap; 
 }
 
 .tab-button:hover {
@@ -589,7 +589,7 @@ button:hover {
     }
 }
 
-/* --- Estilos do Modal de Alerta Personalizado --- */
+
 .custom-alert-overlay {
     position: fixed;
     top: 0;
@@ -756,14 +756,14 @@ button:hover {
 .details-carousel-slide .average-scores,
 .details-carousel-slide h4,
 .details-carousel-slide .details-table {
-    margin: 0 auto; /* Centraliza o conteúdo do slide */
+    margin: 0 auto; 
 }
 
 .details-carousel-navigation {
     position: absolute;
     top: 50%;
-    left: 4rem; /* Move para fora da área do slide */
-    right: 4rem; /* Move para fora da área do slide */
+    left: 4rem; 
+    right: 4rem; 
     transform: translateY(2cm);
     display: flex;
     justify-content: space-between;
@@ -779,10 +779,10 @@ button:hover {
 }
 
 .details-carousel-navigation .evaluator-nav-btn {
-    pointer-events: auto; /* Garante que os botões sejam clicáveis */
+    pointer-events: auto; 
 }
 
-/* Estilos para o Modal de Imagem do Admin */
+
 .image-modal-container {
     position: relative;
     text-align: center;
@@ -791,22 +791,22 @@ button:hover {
 .image-modal-caption {
     position: absolute;
     bottom: 0;
-    left: 50%; /* Centraliza horizontalmente */
-    transform: translateX(-50%); /* Ajuste fino para centralização */
-    width: 100%; /* Ocupa a largura da imagem */
-    max-width: 90%; /* Garante que não ultrapasse a imagem */
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 100%; 
+    max-width: 90%; 
     background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
     padding: 40px 20px 20px 20px;
     text-align: center;
     color: white;
-    white-space: pre-line; /* Respeita as quebras de linha (\n) */
+    white-space: pre-line; 
     text-shadow: 1px 1px 2px black;
 }
 .image-modal-caption span {
     display: block;
 }
 
-.image-modal-caption span:first-child { /* Nome do Participante */
+.image-modal-caption span:first-child { 
     font-size: 1.5rem;
     font-weight: bold;
 }
@@ -856,7 +856,7 @@ button:hover {
     cursor: pointer;
 }
 
-/* --- Estilos do Spinner de Carregamento --- */
+
 #spinner-overlay {
     position: fixed;
     top: 0;
@@ -867,14 +867,14 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; /* Garante que fique acima de tudo */
+    z-index: 9999; 
 }
 
 .spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3; /* Cinza claro */
-    border-top: 5px solid var(--primary-color); /* Cor primária */
+    border: 5px solid #f3f3f3; 
+    border-top: 5px solid var(--primary-color); 
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
